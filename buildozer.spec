@@ -1,4 +1,5 @@
 [app]
+version = 0.1
 title = AndroidRDP
 package.name = androidrdp
 package.domain = org.rdp
