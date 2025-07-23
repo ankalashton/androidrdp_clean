@@ -44,38 +44,24 @@ jobs:
     - name: ✅ Accept SDK licenses
       run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: ❌ Remove Build-Tools 36 if present
-      run: rm -rf $ANDROID_HOME/build-tools/36.0.0 || true
-
-    - name: 📦 Force install Build-Tools 34.0.0
+    - name: 📦 Install SDK components
       run: |
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
           "platforms;android-31" \
           "build-tools;34.0.0" \
+          "build-tools;36.0.0" \
           "ndk;27.3.13750724" \
           --sdk_root=$ANDROID_HOME
-
-    - name: 🪄 Create sdkmanager symlink
-      run: |
-        mkdir -p $ANDROID_HOME/tools/bin
-        ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
 
     - name: 🚧 License workaround file
       run: |
         mkdir -p $HOME/.android
         echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
 
-    - name: 🛡️ Block sdkmanager request for build-tools 36
+    - name: 🪄 Create sdkmanager symlink
       run: |
-        mv $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real
-        echo '#!/bin/bash' > $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-        echo 'args="$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-        echo 'if echo "$args" | grep -q "build-tools;36.0.0"; then' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-        echo '  echo "⛔ Blocked build-tools;36.0.0 manually"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-        echo '  exit 0' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-        echo 'fi' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-        echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real "$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
-        chmod +x $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        mkdir -p $ANDROID_HOME/tools/bin
+        ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
 
     - name: 📥 Clone python-for-android
       run: |
