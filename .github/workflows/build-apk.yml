@@ -44,7 +44,12 @@ jobs:
     - name: ✅ Accept SDK licenses
       run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: 📦 Install SDK components
+    - name: 🚧 Create repositories.cfg for license acceptance
+      run: |
+        mkdir -p $HOME/.android
+        echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
+
+    - name: 📦 Install SDK components including Build-Tools 36
       run: |
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
           "platforms;android-31" \
@@ -52,11 +57,6 @@ jobs:
           "build-tools;36.0.0" \
           "ndk;27.3.13750724" \
           --sdk_root=$ANDROID_HOME
-
-    - name: 🚧 License workaround file
-      run: |
-        mkdir -p $HOME/.android
-        echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
 
     - name: 🪄 Create sdkmanager symlink
       run: |
