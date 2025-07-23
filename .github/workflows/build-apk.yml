@@ -65,6 +65,18 @@ jobs:
         mkdir -p $HOME/.android
         echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
 
+    - name: 🛡️ Block sdkmanager request for build-tools 36
+      run: |
+        mv $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real
+        echo '#!/bin/bash' > $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo 'args="$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo 'if echo "$args" | grep -q "build-tools;36.0.0"; then' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo '  echo "⛔ Blocked build-tools;36.0.0 manually"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo '  exit 0' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo 'fi' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real "$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        chmod +x $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+
     - name: 📥 Clone python-for-android
       run: |
         mkdir -p .buildozer/android/platform
