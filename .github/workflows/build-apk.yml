@@ -19,13 +19,11 @@ jobs:
     - name: 🛎️ Checkout code
       uses: actions/checkout@v4
 
-    - name: 🔥 Clean previous builds
+    - name: 🔥 Clean previous builds & leftovers
       run: |
         rm -rf .buildozer
         rm -rf bin
-
-    - name: 🧼 Remove python-for-android leftovers
-      run: rm -rf .buildozer/android/platform/python-for-android
+        rm -rf .buildozer/android/platform/python-for-android
 
     - name: 📥 Clone your python-for-android fork
       run: |
@@ -98,7 +96,7 @@ jobs:
         buildozer android clean
         buildozer android debug
 
-    - name: 📦 Upload APK artifact
+    - name: 📤 Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: androidrdp_apk
