@@ -44,7 +44,18 @@ jobs:
     - name: ✅ Accept SDK licenses
       run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: 📦 Install SDK components
+    - name: 🚧 Create license config
+      run: |
+        mkdir -p $HOME/.android
+        echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
+
+    - name: ❌ Uninstall build-tools 36.0.0 if present
+      run: |
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+          --uninstall "build-tools;36.0.0" \
+          --sdk_root=$ANDROID_HOME || true
+
+    - name: 📦 Install required SDK components
       run: |
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
           "platforms;android-31" \
@@ -52,7 +63,7 @@ jobs:
           "ndk;27.3.13750724" \
           --sdk_root=$ANDROID_HOME
 
-    - name: 🚫 Wrap sdkmanager to block 36.0.0 requests
+    - name: 🚫 Block sdkmanager requests for build-tools 36
       run: |
         mv $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real
         echo '#!/bin/bash' > $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
@@ -64,15 +75,15 @@ jobs:
         echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real "$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
         chmod +x $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 
-    - name: 🚧 License workaround file
+    - name: 🪄 Create sdkmanager symlink
       run: |
-        mkdir -p $HOME/.android
-        echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
+        mkdir -p $ANDROID_HOME/tools/bin
+        ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
 
-    - name: 📥 Clone custom python-for-android
+    - name: 📥 Clone your python-for-android fork
       run: |
         mkdir -p .buildozer/android/platform
-        git clone https://github.com/ankalashton/python-for-android.git \
+        git clone https://github.com/anton/python-for-android.git \
           .buildozer/android/platform/python-for-android
 
     - name: ❌ Remove libffi recipe
