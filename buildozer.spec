@@ -15,7 +15,7 @@ target = android
 
 [p4a]
 bootstrap = sdl2
-source_dir = .buildozer/android/platform/python-for-android
+source_dir = external/p4a
 ndk_dir = $ANDROID_NDK_HOME
 
 [buildozer]
