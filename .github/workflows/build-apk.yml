@@ -70,9 +70,18 @@ jobs:
         echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real "$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
         chmod +x $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 
+    - name: 🔀 Redirect legacy sdkmanager (tools/bin)
+      run: |
+        mkdir -p $ANDROID_HOME/tools/bin
+        echo '#!/bin/bash' > $ANDROID_HOME/tools/bin/sdkmanager
+        echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "$@"' >> $ANDROID_HOME/tools/bin/sdkmanager
+        chmod +x $ANDROID_HOME/tools/bin/sdkmanager
+
+    - name: 🧼 Remove any existing python-for-android dir
+      run: rm -rf .buildozer/android/platform/python-for-android
+
     - name: 📥 Clone your python-for-android fork
       run: |
-        mkdir -p .buildozer/android/platform
         git clone https://github.com/ankalashton/python-for-android.git \
           .buildozer/android/platform/python-for-android
 
@@ -81,13 +90,13 @@ jobs:
         git config --file .buildozer/android/platform/python-for-android/.git/config \
           remote.origin.url https://github.com/kivy/python-for-android.git
 
-    - name: 🧹 Remove .git fallback (optional)
+    - name: 🧹 Remove .git to disable repo check (optional fallback)
       run: rm -rf .buildozer/android/platform/python-for-android/.git
 
     - name: ❌ Remove libffi recipe
       run: rm -rf .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi
 
-    - name: 🛠️ Patch toolchain
+    - name: 🛠️ Patch toolchain to ignore libffi
       run: |
         sed -i "/'libffi'/d" .buildozer/android/platform/python-for-android/pythonforandroid/recipe.py || true
         test -f .buildozer/android/platform/python-for-android/pythonforandroid/recipes/sqlite3/__init__.py && \
