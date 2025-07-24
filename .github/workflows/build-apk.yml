@@ -44,16 +44,14 @@ jobs:
     - name: ✅ Accept SDK licenses
       run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: 🚧 Create repositories.cfg for license acceptance
+    - name: 🚧 Create license config
       run: |
         mkdir -p $HOME/.android
         echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
 
     - name: 📦 Install Android Platform-Tools
       run: |
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
-          "platform-tools" \
-          --sdk_root=$ANDROID_HOME
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" --sdk_root=$ANDROID_HOME
 
     - name: ❌ Uninstall build-tools 36.0.0 if present
       run: |
@@ -81,10 +79,12 @@ jobs:
         echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real "$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
         chmod +x $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 
-    - name: 🪄 Create sdkmanager symlink
+    - name: 🔀 Redirect legacy sdkmanager from tools/bin
       run: |
         mkdir -p $ANDROID_HOME/tools/bin
-        ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
+        echo '#!/bin/bash' > $ANDROID_HOME/tools/bin/sdkmanager
+        echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "$@"' >> $ANDROID_HOME/tools/bin/sdkmanager
+        chmod +x $ANDROID_HOME/tools/bin/sdkmanager
 
     - name: 📥 Clone your python-for-android fork
       run: |
