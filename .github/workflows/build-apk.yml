@@ -44,10 +44,16 @@ jobs:
     - name: ✅ Accept SDK licenses
       run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: 🚧 Create license config
+    - name: 🚧 Create repositories.cfg for license acceptance
       run: |
         mkdir -p $HOME/.android
         echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
+
+    - name: 📦 Install Android Platform-Tools
+      run: |
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+          "platform-tools" \
+          --sdk_root=$ANDROID_HOME
 
     - name: ❌ Uninstall build-tools 36.0.0 if present
       run: |
@@ -83,7 +89,7 @@ jobs:
     - name: 📥 Clone your python-for-android fork
       run: |
         mkdir -p .buildozer/android/platform
-        git clone https://github.com/ankalashton/python-for-android.git \
+        git clone https://github.com/anton/python-for-android.git \
           .buildozer/android/platform/python-for-android
 
     - name: ❌ Remove libffi recipe
