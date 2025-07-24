@@ -25,11 +25,16 @@ jobs:
         rm -rf bin
         rm -rf external/p4a
 
-    - name: 📥 Clone python-for-android fork
+    - name: 📥 Clone python-for-android fork (safe path)
       run: |
         mkdir -p external
         git clone https://github.com/ankalashton/python-for-android.git external/p4a
         rm -rf external/p4a/.git
+
+    - name: 🧬 Mirror into Buildozer expected location
+      run: |
+        mkdir -p .buildozer/android/platform
+        cp -r external/p4a .buildozer/android/platform/python-for-android
 
     - name: ❌ Remove libffi recipe
       run: rm -rf external/p4a/pythonforandroid/recipes/libffi
