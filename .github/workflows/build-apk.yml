@@ -19,7 +19,7 @@ jobs:
     - name: 🛎️ Checkout code
       uses: actions/checkout@v4
 
-    - name: 🧼 Clean python-for-android directory
+    - name: 🧼 Clean old python-for-android to avoid Buildozer reset
       run: rm -rf .buildozer/android/platform/python-for-android
 
     - name: 🔥 Clean previous builds
