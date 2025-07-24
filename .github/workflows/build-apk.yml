@@ -93,9 +93,14 @@ jobs:
         mkdir -p .buildozer/android/platform
         git clone https://github.com/ankalashton/python-for-android.git \
           .buildozer/android/platform/python-for-android
-        # 🎭 Spoof origin to prevent Buildozer override
+
+    - name: 🎭 Spoof Git origin URL (prevent Buildozer override)
+      run: |
         git config --file .buildozer/android/platform/python-for-android/.git/config \
           remote.origin.url https://github.com/kivy/python-for-android.git
+
+    - name: 🧹 Delete .git to disable repo check fallback
+      run: rm -rf .buildozer/android/platform/python-for-android/.git
 
     - name: ❌ Remove libffi recipe
       run: rm -rf .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi
