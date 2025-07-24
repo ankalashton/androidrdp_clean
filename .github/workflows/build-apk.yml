@@ -19,13 +19,10 @@ jobs:
     - name: 🛎️ Checkout code
       uses: actions/checkout@v4
 
-    - name: 🧼 Clean old python-for-android to avoid Buildozer reset
-      run: rm -rf .buildozer/android/platform/python-for-android
-
     - name: 🔥 Clean previous builds
       run: |
         rm -rf .buildozer
-        rm -rf .buildozer/android/platform/build-arm64-v8a
+        rm -rf bin
 
     - name: 🧱 Install dependencies
       run: |
@@ -72,7 +69,7 @@ jobs:
           "ndk;27.3.13750724" \
           --sdk_root=$ANDROID_HOME
 
-    - name: 🚫 Block sdkmanager requests for build-tools 36 (cmdline-tools)
+    - name: 🚫 Block sdkmanager requests for build-tools 36
       run: |
         mv $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real
         echo '#!/bin/bash' > $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
@@ -87,21 +84,18 @@ jobs:
     - name: 🔀 Redirect legacy sdkmanager (tools/bin)
       run: |
         mkdir -p $ANDROID_HOME/tools/bin
-        mv $ANDROID_HOME/tools/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager.real || true
         echo '#!/bin/bash' > $ANDROID_HOME/tools/bin/sdkmanager
-        echo 'args="$@"' >> $ANDROID_HOME/tools/bin/sdkmanager
-        echo 'if echo "$args" | grep -q "build-tools;36.0.0"; then' >> $ANDROID_HOME/tools/bin/sdkmanager
-        echo '  echo "⛔ Blocked build-tools;36.0.0 via tools/bin/sdkmanager"' >> $ANDROID_HOME/tools/bin/sdkmanager
-        echo '  exit 0' >> $ANDROID_HOME/tools/bin/sdkmanager
-        echo 'fi' >> $ANDROID_HOME/tools/bin/sdkmanager
         echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "$@"' >> $ANDROID_HOME/tools/bin/sdkmanager
         chmod +x $ANDROID_HOME/tools/bin/sdkmanager
 
-    - name: 📥 Clone your python-for-android fork
+    - name: 📥 Clone python-for-android fork
       run: |
         mkdir -p .buildozer/android/platform
         git clone https://github.com/ankalashton/python-for-android.git \
           .buildozer/android/platform/python-for-android
+        # 🎭 Spoof origin to prevent Buildozer override
+        git config --file .buildozer/android/platform/python-for-android/.git/config \
+          remote.origin.url https://github.com/kivy/python-for-android.git
 
     - name: ❌ Remove libffi recipe
       run: rm -rf .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi
