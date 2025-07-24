@@ -33,7 +33,7 @@ jobs:
         pip3 install --upgrade pip setuptools wheel
         pip3 install buildozer cython appdirs toml build
 
-    - name: 🗂️ Install Android cmdline-tools
+    - name: 📦 Install Android cmdline-tools
       run: |
         mkdir -p $ANDROID_HOME/cmdline-tools
         cd $ANDROID_HOME/cmdline-tools
@@ -44,32 +44,21 @@ jobs:
     - name: ✅ Accept SDK licenses
       run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: 🚧 Create repositories.cfg for license acceptance
+    - name: 🚧 Create repositories.cfg
       run: |
         mkdir -p $HOME/.android
         echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
 
-    - name: 📦 Install Android Platform-Tools
+    - name: 📦 Install platform-tools, SDK & NDK
       run: |
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
           "platform-tools" \
-          --sdk_root=$ANDROID_HOME
-
-    - name: ❌ Uninstall build-tools 36.0.0 if present
-      run: |
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
-          --uninstall "build-tools;36.0.0" \
-          --sdk_root=$ANDROID_HOME || true
-
-    - name: 📦 Install required SDK components
-      run: |
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
           "platforms;android-31" \
           "build-tools;34.0.0" \
           "ndk;27.3.13750724" \
           --sdk_root=$ANDROID_HOME
 
-    - name: 🚫 Block sdkmanager requests for build-tools 36
+    - name: 🚫 Block sdkmanager build-tools;36.0.0
       run: |
         mv $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real
         echo '#!/bin/bash' > $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
@@ -81,31 +70,24 @@ jobs:
         echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real "$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
         chmod +x $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 
-    - name: 🔀 Redirect legacy sdkmanager (tools/bin)
-      run: |
-        mkdir -p $ANDROID_HOME/tools/bin
-        echo '#!/bin/bash' > $ANDROID_HOME/tools/bin/sdkmanager
-        echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "$@"' >> $ANDROID_HOME/tools/bin/sdkmanager
-        chmod +x $ANDROID_HOME/tools/bin/sdkmanager
-
-    - name: 📥 Clone python-for-android fork
+    - name: 📥 Clone your python-for-android fork
       run: |
         mkdir -p .buildozer/android/platform
         git clone https://github.com/ankalashton/python-for-android.git \
           .buildozer/android/platform/python-for-android
 
-    - name: 🎭 Spoof Git origin URL (prevent Buildozer override)
+    - name: 🎭 Spoof Git origin URL
       run: |
         git config --file .buildozer/android/platform/python-for-android/.git/config \
           remote.origin.url https://github.com/kivy/python-for-android.git
 
-    - name: 🧹 Delete .git to disable repo check fallback
+    - name: 🧹 Remove .git fallback (optional)
       run: rm -rf .buildozer/android/platform/python-for-android/.git
 
     - name: ❌ Remove libffi recipe
       run: rm -rf .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi
 
-    - name: 🛠️ Patch toolchain to ignore libffi
+    - name: 🛠️ Patch toolchain
       run: |
         sed -i "/'libffi'/d" .buildozer/android/platform/python-for-android/pythonforandroid/recipe.py || true
         test -f .buildozer/android/platform/python-for-android/pythonforandroid/recipes/sqlite3/__init__.py && \
