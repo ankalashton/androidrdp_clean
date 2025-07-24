@@ -19,19 +19,19 @@ jobs:
     - name: 🛎️ Checkout code
       uses: actions/checkout@v4
 
-    - name: 🔥 Clean previous builds & wrong contents
+    - name: 🔥 Clean previous builds & wrong python-for-android
       run: |
         rm -rf .buildozer
         rm -rf bin
         rm -rf .buildozer/android/platform/python-for-android
 
-    - name: 📥 Clone your python-for-android fork (correct)
+    - name: 📥 Clone correct python-for-android fork
       run: |
         mkdir -p .buildozer/android/platform
         git clone https://github.com/ankalashton/python-for-android.git \
           .buildozer/android/platform/python-for-android
 
-    - name: 🎭 Spoof origin & disable repo check
+    - name: 🎭 Spoof Git origin & remove .git for Buildozer
       run: |
         git config --file .buildozer/android/platform/python-for-android/.git/config \
           remote.origin.url https://github.com/kivy/python-for-android.git
@@ -46,7 +46,7 @@ jobs:
         test -f .buildozer/android/platform/python-for-android/pythonforandroid/recipes/sqlite3/__init__.py && \
           sed -i "/'libffi'/d" .buildozer/android/platform/python-for-android/pythonforandroid/recipes/sqlite3/__init__.py || true
 
-    - name: 🧱 Install build dependencies
+    - name: 🧱 Install dependencies
       run: |
         sudo apt update
         sudo apt install -y build-essential ccache unzip libncurses6 openjdk-17-jdk \
