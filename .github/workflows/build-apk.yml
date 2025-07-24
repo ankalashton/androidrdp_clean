@@ -19,18 +19,20 @@ jobs:
     - name: 🛎️ Checkout code
       uses: actions/checkout@v4
 
-    - name: 🔥 Clean previous build & platform fork
+    - name: 🔥 Clean previous builds
       run: |
         rm -rf .buildozer
         rm -rf bin
-        rm -rf .buildozer/android/platform/python-for-android
 
-    - name: 📥 Clone python-for-android fork
+    - name: 🧼 Remove python-for-android leftovers
+      run: rm -rf .buildozer/android/platform/python-for-android
+
+    - name: 📥 Clone your python-for-android fork
       run: |
         git clone https://github.com/ankalashton/python-for-android.git \
           .buildozer/android/platform/python-for-android
 
-    - name: 🎭 Spoof origin & remove .git to prevent reset
+    - name: 🎭 Spoof Git origin & remove .git
       run: |
         git config --file .buildozer/android/platform/python-for-android/.git/config \
           remote.origin.url https://github.com/kivy/python-for-android.git
