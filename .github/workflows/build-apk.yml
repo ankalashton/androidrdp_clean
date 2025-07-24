@@ -112,7 +112,6 @@ jobs:
     - name: 🏗️ Build APK
       run: |
         buildozer android clean
-        buildozer android update
         buildozer android debug
 
     - name: 📦 Upload APK artifact
