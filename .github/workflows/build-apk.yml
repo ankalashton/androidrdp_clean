@@ -19,18 +19,19 @@ jobs:
     - name: 🛎️ Checkout code
       uses: actions/checkout@v4
 
-    - name: 🔥 Clean previous builds & leftovers
+    - name: 🔥 Clean previous builds & wrong contents
       run: |
         rm -rf .buildozer
         rm -rf bin
         rm -rf .buildozer/android/platform/python-for-android
 
-    - name: 📥 Clone your python-for-android fork
+    - name: 📥 Clone your python-for-android fork (correct)
       run: |
+        mkdir -p .buildozer/android/platform
         git clone https://github.com/ankalashton/python-for-android.git \
           .buildozer/android/platform/python-for-android
 
-    - name: 🎭 Spoof Git origin & remove .git
+    - name: 🎭 Spoof origin & disable repo check
       run: |
         git config --file .buildozer/android/platform/python-for-android/.git/config \
           remote.origin.url https://github.com/kivy/python-for-android.git
@@ -45,7 +46,7 @@ jobs:
         test -f .buildozer/android/platform/python-for-android/pythonforandroid/recipes/sqlite3/__init__.py && \
           sed -i "/'libffi'/d" .buildozer/android/platform/python-for-android/pythonforandroid/recipes/sqlite3/__init__.py || true
 
-    - name: 🧱 Install dependencies
+    - name: 🧱 Install build dependencies
       run: |
         sudo apt update
         sudo apt install -y build-essential ccache unzip libncurses6 openjdk-17-jdk \
@@ -70,7 +71,7 @@ jobs:
         mkdir -p $HOME/.android
         echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
 
-    - name: 📦 Install required Android components
+    - name: 📦 Install Android components
       run: |
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
           "platform-tools" \
