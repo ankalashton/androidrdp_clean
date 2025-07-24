@@ -15,7 +15,7 @@ target = android
 
 [p4a]
 bootstrap = sdl2
-python-for-android.url = https://github.com/ankalashton/python-for-android.git
+source_dir = .buildozer/android/platform/python-for-android
 ndk_dir = $ANDROID_NDK_HOME
 
 [buildozer]
