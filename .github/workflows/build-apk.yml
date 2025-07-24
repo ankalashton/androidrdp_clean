@@ -19,33 +19,32 @@ jobs:
     - name: 🛎️ Checkout code
       uses: actions/checkout@v4
 
-    - name: 🔥 Clean previous builds
+    - name: 🔥 Clean conflicting python-for-android
       run: |
-        rm -rf .buildozer
-        rm -rf bin
-        rm -rf external/p4a
+        rm -rf .buildozer/android/platform/python-for-android
 
-    - name: 📥 Clone python-for-android fork (safe path)
-      run: |
-        mkdir -p external
-        git clone https://github.com/ankalashton/python-for-android.git external/p4a
-        rm -rf external/p4a/.git
-
-    - name: 🧬 Mirror into Buildozer expected location
+    - name: 📥 Clone correct python-for-android fork
       run: |
         mkdir -p .buildozer/android/platform
-        cp -r external/p4a .buildozer/android/platform/python-for-android
+        git clone https://github.com/ankalashton/python-for-android.git \
+          .buildozer/android/platform/python-for-android
+
+    - name: 🎭 Spoof Git origin & remove .git
+      run: |
+        git config --file .buildozer/android/platform/python-for-android/.git/config \
+          remote.origin.url https://github.com/kivy/python-for-android.git
+        rm -rf .buildozer/android/platform/python-for-android/.git
 
     - name: ❌ Remove libffi recipe
-      run: rm -rf external/p4a/pythonforandroid/recipes/libffi
+      run: rm -rf .buildozer/android/platform/python-for-android/pythonforandroid/recipes/libffi
 
     - name: 🛠️ Patch toolchain to ignore libffi
       run: |
-        sed -i "/'libffi'/d" external/p4a/pythonforandroid/recipe.py || true
-        test -f external/p4a/pythonforandroid/recipes/sqlite3/__init__.py && \
-          sed -i "/'libffi'/d" external/p4a/pythonforandroid/recipes/sqlite3/__init__.py || true
+        sed -i "/'libffi'/d" .buildozer/android/platform/python-for-android/pythonforandroid/recipe.py || true
+        test -f .buildozer/android/platform/python-for-android/pythonforandroid/recipes/sqlite3/__init__.py && \
+          sed -i "/'libffi'/d" .buildozer/android/platform/python-for-android/pythonforandroid/recipes/sqlite3/__init__.py || true
 
-    - name: 🧱 Install dependencies
+    - name: 🧱 Install build dependencies
       run: |
         sudo apt update
         sudo apt install -y build-essential ccache unzip libncurses6 openjdk-17-jdk \
@@ -91,10 +90,8 @@ jobs:
         echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real "$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
         chmod +x $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 
-    - name: 🏗️ Build APK
-      run: |
-        buildozer android clean
-        buildozer android debug
+    - name: 🏗️ Build APK (without clean to preserve p4a)
+      run: buildozer android debug
 
     - name: 📤 Upload APK artifact
       uses: actions/upload-artifact@v4
