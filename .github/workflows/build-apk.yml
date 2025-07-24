@@ -44,29 +44,35 @@ jobs:
     - name: ✅ Accept SDK licenses
       run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: 🚧 Create repositories.cfg for license acceptance
-      run: |
-        mkdir -p $HOME/.android
-        echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
-
-    - name: 📦 Install SDK components including Build-Tools 36
+    - name: 📦 Install SDK components
       run: |
         yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
           "platforms;android-31" \
           "build-tools;34.0.0" \
-          "build-tools;36.0.0" \
           "ndk;27.3.13750724" \
           --sdk_root=$ANDROID_HOME
 
-    - name: 🪄 Create sdkmanager symlink
+    - name: 🚫 Wrap sdkmanager to block 36.0.0 requests
       run: |
-        mkdir -p $ANDROID_HOME/tools/bin
-        ln -sf $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager
+        mv $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real
+        echo '#!/bin/bash' > $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo 'args="$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo 'if echo "$args" | grep -q "build-tools;36.0.0"; then' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo '  echo "⛔ Blocked build-tools;36.0.0 manually"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo '  exit 0' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo 'fi' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real "$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
+        chmod +x $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 
-    - name: 📥 Clone python-for-android
+    - name: 🚧 License workaround file
+      run: |
+        mkdir -p $HOME/.android
+        echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
+
+    - name: 📥 Clone custom python-for-android
       run: |
         mkdir -p .buildozer/android/platform
-        git clone --depth 1 https://github.com/kivy/python-for-android.git \
+        git clone https://github.com/anton/python-for-android.git \
           .buildozer/android/platform/python-for-android
 
     - name: ❌ Remove libffi recipe
