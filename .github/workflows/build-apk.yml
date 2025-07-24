@@ -44,14 +44,16 @@ jobs:
     - name: ✅ Accept SDK licenses
       run: yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses
 
-    - name: 🚧 Create license config
+    - name: 🚧 Create repositories.cfg for license acceptance
       run: |
         mkdir -p $HOME/.android
         echo "8933bad161af4178b1185d1a37fbf41ea5269c55" > $HOME/.android/repositories.cfg
 
     - name: 📦 Install Android Platform-Tools
       run: |
-        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "platform-tools" --sdk_root=$ANDROID_HOME
+        yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager \
+          "platform-tools" \
+          --sdk_root=$ANDROID_HOME
 
     - name: ❌ Uninstall build-tools 36.0.0 if present
       run: |
@@ -67,7 +69,7 @@ jobs:
           "ndk;27.3.13750724" \
           --sdk_root=$ANDROID_HOME
 
-    - name: 🚫 Block sdkmanager requests for build-tools 36
+    - name: 🚫 Block sdkmanager requests for build-tools 36 (cmdline-tools)
       run: |
         mv $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real
         echo '#!/bin/bash' > $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
@@ -79,10 +81,16 @@ jobs:
         echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager.real "$@"' >> $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
         chmod +x $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager
 
-    - name: 🔀 Redirect legacy sdkmanager from tools/bin
+    - name: 🔀 Redirect legacy sdkmanager (tools/bin)
       run: |
         mkdir -p $ANDROID_HOME/tools/bin
+        mv $ANDROID_HOME/tools/bin/sdkmanager $ANDROID_HOME/tools/bin/sdkmanager.real || true
         echo '#!/bin/bash' > $ANDROID_HOME/tools/bin/sdkmanager
+        echo 'args="$@"' >> $ANDROID_HOME/tools/bin/sdkmanager
+        echo 'if echo "$args" | grep -q "build-tools;36.0.0"; then' >> $ANDROID_HOME/tools/bin/sdkmanager
+        echo '  echo "⛔ Blocked build-tools;36.0.0 via tools/bin/sdkmanager"' >> $ANDROID_HOME/tools/bin/sdkmanager
+        echo '  exit 0' >> $ANDROID_HOME/tools/bin/sdkmanager
+        echo 'fi' >> $ANDROID_HOME/tools/bin/sdkmanager
         echo 'exec $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "$@"' >> $ANDROID_HOME/tools/bin/sdkmanager
         chmod +x $ANDROID_HOME/tools/bin/sdkmanager
 
