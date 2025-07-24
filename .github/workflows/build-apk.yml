@@ -89,7 +89,7 @@ jobs:
     - name: 📥 Clone your python-for-android fork
       run: |
         mkdir -p .buildozer/android/platform
-        git clone https://github.com/anton/python-for-android.git \
+        git clone https://github.com/ankalashton/python-for-android.git \
           .buildozer/android/platform/python-for-android
 
     - name: ❌ Remove libffi recipe
